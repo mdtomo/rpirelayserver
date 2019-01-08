@@ -5,18 +5,45 @@ import secrets
 from collections import deque
 import json
 import logging
+import pickle
+from pathlib import Path
+from config import Config as config
 
+
+# TODO
+"""
+1. Send the saved relay status on client connection. DONE
+2. Move settings into config.py Config class.
+"""
 
 logging.basicConfig(
-    format='%(asctime)s: %(levelname)s: %(module)s/%(funcName)s: %(message)s',
-    level=logging.DEBUG)
+    format=config.log_format,
+    level=config.log_level) # logging.DEBUG
 logger = logging.getLogger(__name__)
-HOST = '127.0.0.1'
-PORT = 2018
+
 
 server, reader, writer = None, None, None
 connected_clients = []
 message_queue = []
+
+
+def save_relay_status(new_status):
+    if not config.save_path.parent.exists():
+        os.mkdir(config.save_path.parent)
+        logger.info(f'Created {config.save_path.parent}')
+    with open(config.save_path, 'w+b') as saved_status:
+            pickle.dump(new_status, saved_status)
+            logger.info(f'Updated {config.save_path.name} with {new_status}.')
+
+
+def get_relay_status():
+    try:
+        with open(config.save_path, 'rb') as status:
+            return pickle.load(status)
+    except FileNotFoundError as error:
+        default_status = [False for status in range(8)]
+        save_relay_status(default_status)
+        return default_status
 
 
 def main():
@@ -34,7 +61,7 @@ def main():
 
 async def start_listening():
     global server
-    server = await asyncio.start_server(client_connected, HOST, PORT)
+    server = await asyncio.start_server(client_connected, config.host, config.port)
     addr = server.sockets[0].getsockname()
     logger.info(f'Server started on {addr[0]}:{addr[1]} with PID {os.getpid()}')
     async with server:
@@ -49,6 +76,7 @@ async def client_connected(reader, writer):
     logger.info(f'Client connected from {addr[0]}:{addr[1]}')
     logger.info('Sending msg.')
     writer.write('Thanks for connecting.'.encode())
+    writer.write(str(get_relay_status()).encode())
 
     data = None
     while data is not b'':
@@ -79,7 +107,7 @@ def process_data(data):
 
         message_start = processed_len + fixed_len + header_len
         message_end = processed_len + fixed_len + header_len + header['message_length']
-        # Check the first 2 bytes for the length(int) of the message header.
+        # Check the first 2 bytes for the length of the message header.
         message = unpack_data(data[message_start:message_end])
         logger.debug(f'Processed message: {message}')
 

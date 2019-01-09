@@ -1,3 +1,4 @@
+.vscode
 rpirserver/data/**
 .DS_Store
 out

@@ -41,9 +41,15 @@ def get_relay_status():
         with open(config.save_path, 'rb') as status:
             return pickle.load(status)
     except FileNotFoundError as error:
-        default_status = [False for status in range(8)]
+        default_status = tuple([False for status in range(8)])
         save_relay_status(default_status)
         return default_status
+
+
+def update_relay_status(message):
+    new_status = list(get_relay_status())
+    new_status[message[0]] = message[1]
+    save_relay_status(new_status)
 
 
 def main():
@@ -94,11 +100,14 @@ def process_data(data):
     #logger.debug(f'The data: {data.decode()}')
     data_len = len(data)
     processed_len = 0
-    fixed_len = 2
+    fixed_len = 2 # First 2 bytes contain the length of the message header.
 
     while processed_len < data_len:
         header_len = int.from_bytes(data[processed_len: processed_len + fixed_len], byteorder='big')
         logger.debug(f'Processed header length: {header_len}')
+        if header_len > data_len:
+            logger.warning(f'Incorrect header length received.')
+            return
 
         header_start = processed_len + fixed_len
         header_end = processed_len + fixed_len + header_len
@@ -113,6 +122,9 @@ def process_data(data):
 
         processed_len += fixed_len + header_len + header['message_length']
         logger.debug(f'Processed {processed_len}/{data_len} bytes. Message: {message}')
+
+        if header['message_type'] == 'ChannelRequest':
+            update_relay_status(message)
 
 
 def unpack_data(data):

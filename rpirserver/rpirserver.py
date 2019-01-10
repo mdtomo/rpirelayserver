@@ -8,20 +8,13 @@ import logging
 import pickle
 from pathlib import Path
 from config import Config as config
+from gpiozero import LED
 
-
-# TODO
-"""
-1. Send the saved relay status on client connection. DONE
-2. Move settings into config.py Config class.
-"""
 
 logging.basicConfig(
     format=config.log_format,
     level=config.log_level) # logging.DEBUG
 logger = logging.getLogger(__name__)
-
-
 server, reader, writer = None, None, None
 connected_clients = []
 message_queue = []
@@ -52,17 +45,22 @@ def update_relay_status(message):
     save_relay_status(new_status)
 
 
+def set_relays(status):
+    outputs = tuple([LED(output) for output in config.gpios])
+    [output.on() for output in outputs]
+
+
 def main():
+    relay_status = get_relay_status()
+    set_relays(relay_status)
+
     loop = asyncio.get_event_loop()
 
     start_server_task = loop.create_task(start_listening())
-    task1 = loop.create_task(message_worker())
-    #task2 = loop.create_task(connected_clients_worker(1))
-    #task3 = loop.create_task(connected_clients_worker(2))
-
-    all_tasks = asyncio.gather(start_server_task, task1)
+    mwtask = loop.create_task(message_worker())
+    
+    all_tasks = asyncio.gather(start_server_task, mwtask)
     loop.run_until_complete(all_tasks)
-    #asyncio.run(start_listening(), debug=True)
 
 
 async def start_listening():
@@ -80,9 +78,8 @@ async def client_connected(reader, writer):
     connected_clients.append(writer)
     logger.info(f'Connected clients {len(connected_clients)}.')
     logger.info(f'Client connected from {addr[0]}:{addr[1]}')
-    logger.info('Sending msg.')
-    writer.write('Thanks for connecting.'.encode())
-    writer.write(str(get_relay_status()).encode())
+    # Update the connected client with the current relay status.
+    message_queue.append(get_relay_status())
 
     data = None
     while data is not b'':
@@ -96,8 +93,6 @@ async def client_connected(reader, writer):
 
 
 def process_data(data):
-    #logger.debug(f'Processing {len(data)} bytes.')
-    #logger.debug(f'The data: {data.decode()}')
     data_len = len(data)
     processed_len = 0
     fixed_len = 2 # First 2 bytes contain the length of the message header.
@@ -132,24 +127,15 @@ def unpack_data(data):
     return json.loads(json_header)
 
 
-async def connected_clients_worker(worker):
-    global message_queue
-    while True:
-        if len(connected_clients) >= 1:
-            data = secrets.token_hex(4)
-            message_queue.append(f'{worker} {data}.')
-            print(f'messages {len(message_queue)} worker {worker}')
-        await asyncio.sleep(5)
-
-
 async def message_worker():
     global message_queue
     while True:
         if len(connected_clients) >= 1 and len(message_queue) >= 1:
             for message in message_queue:
                 for writer in connected_clients:
-                    print(f'Message sent from worker {message}')
-                    writer.write(message.encode())
+                    addr = writer.get_extra_info('peername')
+                    logger.info(f'Sending {addr[0]}:{addr[1]} message: {message}')
+                    writer.write(str(message).encode())
                     await asyncio.sleep(0.01)
             message_queue = []
         await asyncio.sleep(1)

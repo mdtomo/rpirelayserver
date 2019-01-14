@@ -1,14 +1,13 @@
 import socket
 import asyncio
 import os
-import secrets
 from collections import deque
 import json
 import logging
 import pickle
 from pathlib import Path
 from config import Config as config
-from gpiozero import LED
+from outputs import Relay
 
 
 logging.basicConfig(
@@ -18,6 +17,7 @@ logger = logging.getLogger(__name__)
 server, reader, writer = None, None, None
 connected_clients = []
 message_queue = []
+relays = tuple([Relay(output) for output in config.gpios])
 
 
 def save_relay_status(new_status):
@@ -43,16 +43,23 @@ def update_relay_status(message):
     new_status = list(get_relay_status())
     new_status[message[0]] = message[1]
     save_relay_status(new_status)
+    set_relay_outputs(message)
 
 
-def set_relays(status):
-    outputs = tuple([LED(output) for output in config.gpios])
-    [output.on() for output in outputs]
+def set_relay_outputs(message):
+    global relays
+    relays[message[0]].value = message[1]
+    #outputs = tuple([LED(output) for output in config.gpios])
+    #[output.on() for output in outputs]
+    #outputs[0].off()
+    #outputs[1].on()
+    #outputs[2].off()
+    print(relays)
 
 
 def main():
     relay_status = get_relay_status()
-    set_relays(relay_status)
+    #set_relays(relay_status)
 
     loop = asyncio.get_event_loop()
 

@@ -1,6 +1,6 @@
 Pipfile.lock
 .vscode
-rpirserver/data/**
+rpirelayserver/data/**
 .DS_Store
 out
 node_modules

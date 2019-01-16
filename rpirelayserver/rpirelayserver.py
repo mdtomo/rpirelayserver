@@ -14,6 +14,11 @@ logging.basicConfig(
     format=config.log_format,
     level=config.log_level) # logging.DEBUG
 logger = logging.getLogger(__name__)
+if config.log_to_file:
+    fh = logging.FileHandler(config.log_file_path)
+    fh.setFormatter(logging.Formatter(config.log_format))
+    fh.setLevel(config.log_level)
+    logger.addHandler(fh)
 server, reader, writer = None, None, None
 connected_clients = []
 message_queue = []
@@ -49,25 +54,21 @@ def update_relay_status(message):
 def set_relay_outputs(message):
     global relays
     relays[message[0]].value = message[1]
-    #outputs = tuple([LED(output) for output in config.gpios])
-    #[output.on() for output in outputs]
-    #outputs[0].off()
-    #outputs[1].on()
-    #outputs[2].off()
-    print(relays)
 
 
 def main():
-    relay_status = get_relay_status()
-    #set_relays(relay_status)
-
+    get_relay_status()
     loop = asyncio.get_event_loop()
 
     start_server_task = loop.create_task(start_listening())
     mwtask = loop.create_task(message_worker())
     
     all_tasks = asyncio.gather(start_server_task, mwtask)
-    loop.run_until_complete(all_tasks)
+    try:
+        loop.run_until_complete(all_tasks)
+    except KeyboardInterrupt:
+        logger.info('Program exiting...')
+        logging.shutdown()
 
 
 async def start_listening():
@@ -77,7 +78,7 @@ async def start_listening():
     logger.info(f'Server started on {addr[0]}:{addr[1]} with PID {os.getpid()}')
     async with server:
         await server.serve_forever()
-
+    
 
 async def client_connected(reader, writer):
     addr = writer.get_extra_info('peername')

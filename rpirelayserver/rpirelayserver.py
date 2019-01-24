@@ -37,27 +37,33 @@ def save_relay_status(new_status):
 def get_relay_status():
     try:
         with open(config.save_path, 'rb') as status:
-            return pickle.load(status)
+            return tuple(pickle.load(status))
     except FileNotFoundError as error:
         default_status = tuple([False for status in range(8)])
         save_relay_status(default_status)
         return default_status
 
 
-def update_relay_status(message):
+def update_relay_state(message):
     new_status = list(get_relay_status())
     new_status[message[0]] = message[1]
     save_relay_status(new_status)
-    set_relay_outputs(message)
+    set_relay_state(message)
 
 
-def set_relay_outputs(message):
+def set_relay_state(message):
     global relays
     relays[message[0]].value = message[1]
 
 
+def set_relay_states(states):
+    global relays
+    for i, state in enumerate(states):
+        relays[i].value = state
+
+
 def main():
-    get_relay_status()
+    set_relay_states(get_relay_status())
     loop = asyncio.get_event_loop()
 
     start_server_task = loop.create_task(start_listening())
@@ -127,7 +133,7 @@ def process_data(data):
         logger.debug(f'Processed {processed_len}/{data_len} bytes. Message: {message}')
 
         if header['message_type'] == 'ChannelRequest':
-            update_relay_status(message)
+            update_relay_state(message)
 
 
 def unpack_data(data):
@@ -143,7 +149,7 @@ async def message_worker():
                 for writer in connected_clients:
                     addr = writer.get_extra_info('peername')
                     logger.info(f'Sending {addr[0]}:{addr[1]} message: {message}')
-                    writer.write(str(message).encode())
+                    writer.write(json.dumps(message).encode())
                     await asyncio.sleep(0.01)
             message_queue = []
         await asyncio.sleep(1)

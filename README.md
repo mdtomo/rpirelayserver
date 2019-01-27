@@ -1,7 +1,9 @@
 # Raspberry Pi Relay Server
 > Control your relay board with a Raspberry Pi over a LAN. 
 
-This is the command server for controlling a relay board, connected to your Raspberry Pi. Check out [Rpirelayclient](https://github.com/mdtomo/rpirelayclient) for the command line user interface client. You can run both client and server on the same machine attached to localhost (127.0.0.1). 
+[![asciicast](https://asciinema.org/a/Ob3w6GREdB2YASWdHPfWnfJbx.svg)](https://asciinema.org/a/Ob3w6GREdB2YASWdHPfWnfJbx)
+
+This is the command server for controlling a relay board, connected to your Raspberry Pi. Check out [Rpirelayclient](https://github.com/mdtomo/rpirelayclient) for the command line user interface client. You can run both client and server on a Raspberry Pi attached to localhost (127.0.0.1). Or run [Rpirelayclient](https://github.com/mdtomo/rpirelayclient) on a separate machine and control your relay board over a LAN. 
 
 When the client connects to the server, the server will update the client with the default state of each relay. The client can turn on or off any of the relays and the state will be preserved for next time the client connects. 
 

@@ -1,7 +1,9 @@
 # Raspberry Pi Relay Server
 > Control your relay board with a Raspberry Pi over a LAN. 
 
-[![asciicast](https://asciinema.org/a/Ob3w6GREdB2YASWdHPfWnfJbx.svg)](https://asciinema.org/a/Ob3w6GREdB2YASWdHPfWnfJbx)
+![Rpirelayserver](https://github.com/mdtomo/rpirelayserver/raw/master/server.gif)
+
+![Sainsmart Relay Board](https://github.com/mdtomo/rpirelayserver/raw/master/relays.gif)
 
 This is the command server for controlling a relay board, connected to your Raspberry Pi. Check out [Rpirelayclient](https://github.com/mdtomo/rpirelayclient) for the command line user interface client. You can run both client and server on a Raspberry Pi attached to localhost (127.0.0.1). Or run [Rpirelayclient](https://github.com/mdtomo/rpirelayclient) on a separate machine and control your relay board over a LAN. 
 
@@ -22,5 +24,5 @@ Run the server.
 
 `sudo python3.7 rpirelayserver.py`
 
-##License
+## License
 This project is licensed under the MIT License - see the LICENSE.md file for details.

@@ -1,7 +1,6 @@
 import socket
 import asyncio
 import os
-from collections import deque
 import json
 import logging
 import pickle
@@ -14,11 +13,16 @@ logging.basicConfig(
     format=config.log_format,
     level=config.log_level) # logging.DEBUG
 logger = logging.getLogger(__name__)
+
 if config.log_to_file:
+    if not config.log_file_path.parent.exists():
+        config.log_file_path.parent.mkdir()
+        logger.info(f'Created {config.file_path.parent}')
     fh = logging.FileHandler(config.log_file_path)
     fh.setFormatter(logging.Formatter(config.log_format))
     fh.setLevel(config.log_level)
     logger.addHandler(fh)
+
 server, reader, writer = None, None, None
 connected_clients = []
 message_queue = []
@@ -27,11 +31,11 @@ relays = tuple([Relay(output) for output in config.gpios])
 
 def save_relay_status(new_status):
     if not config.save_path.parent.exists():
-        os.mkdir(config.save_path.parent)
+        config.save_path.parent.mkdir() # os.mkdir(config.save_path.parent)
         logger.info(f'Created {config.save_path.parent}')
     with open(config.save_path, 'w+b') as saved_status:
-            pickle.dump(new_status, saved_status)
-            logger.info(f'Updated {config.save_path.name} with {new_status}.')
+        pickle.dump(new_status, saved_status)
+        logger.info(f'Updated {config.save_path.name} with {new_status}.')
 
 
 def get_relay_status():
@@ -117,12 +121,14 @@ def process_data(data):
         if header_len > data_len:
             logger.warning(f'Incorrect header length received.')
             return
-
+        
+        # Message header contains 2 fields,  message_type and message_length.
         header_start = processed_len + fixed_len
         header_end = processed_len + fixed_len + header_len
         header = unpack_data(data[header_start:header_end])
         logger.debug(f'Processed header: {header}')
-
+        
+        # Message contains the command.
         message_start = processed_len + fixed_len + header_len
         message_end = processed_len + fixed_len + header_len + header['message_length']
         # Check the first 2 bytes for the length of the message header.

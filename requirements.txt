@@ -1,0 +1,13 @@
+Adafruit-Blinka==0.4.0
+adafruit-circuitpython-neopixel==3.3.4
+Adafruit-GPIO==1.0.3
+Adafruit-PureIO==0.2.3
+asciinema==2.0.2
+certifi==2018.11.29
+gpiozero==1.4.1
+pipenv==2018.11.26
+rpi-ws281x==4.1.0
+RPi.GPIO==0.6.5
+spidev==3.2
+virtualenv==16.1.0
+virtualenv-clone==0.4.0

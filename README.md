@@ -1,3 +1,4 @@
+[![Build Status](https://travis-ci.com/mdtomo/rpirelayserver.svg?branch=master)](https://travis-ci.com/mdtomo/rpirelayserver)
 # Raspberry Pi Relay Server
 > Control your relay board with a Raspberry Pi over a LAN. 
 
@@ -18,7 +19,7 @@ git clone https://github.com/mdtomo/rpirelayserver`
 cd rpirelayserver
 ```
 
-Change the settings in config.py and set the output pins you are using on your Raspberry Pi. Set the ip to 127.0.0.1 if you wish to run [Rpirelayclient](https://github.com/mdtomo/rpirelayclient) on the same Raspberry Pi. To control over a LAN use your Raspberry Pi's LAN ip address. (`ifconfig`). I would not recommend using your public ip address.
+Change the settings in config.py and set the output pins you are using on your Raspberry Pi. Set the IP to 127.0.0.1 if you wish to run [Rpirelayclient](https://github.com/mdtomo/rpirelayclient) on the same Raspberry Pi. To control over a LAN use your Raspberry Pi's LAN IP address. (`ifconfig`). I would not recommend using your public IP address.
 
 Run the server.
 

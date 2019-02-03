@@ -6,6 +6,7 @@ sys.path.append(str(p.resolve())) # '/home/pi/rpirelayserver/rpirelayserver'
 print(sys.path)
 import rpirelayserver as rpi
 print(dir(rpi))
+print(f'The file {rpi.__file__}')
 
 class TestRelayStatus:
     pass

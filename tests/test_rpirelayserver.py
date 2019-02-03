@@ -5,7 +5,7 @@ p = Path.home() / 'rpirelayserver' / 'rpirelayserver'
 sys.path.append(str(p.resolve())) # '/home/pi/rpirelayserver/rpirelayserver'
 print(sys.path)
 import rpirelayserver as rpi
-
+print(dir(rpi))
 
 class TestRelayStatus:
     pass

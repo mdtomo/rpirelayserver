@@ -17,7 +17,7 @@ logger = logging.getLogger(__name__)
 if config.log_to_file:
     if not config.log_file_path.parent.exists():
         config.log_file_path.parent.mkdir()
-        logger.info(f'Created {config.file_path.parent}')
+        logger.info(f'Created {config.log_file_path.parent}')
     fh = logging.FileHandler(config.log_file_path)
     fh.setFormatter(logging.Formatter(config.log_format))
     fh.setLevel(config.log_level)

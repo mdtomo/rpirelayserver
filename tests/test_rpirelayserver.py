@@ -3,11 +3,8 @@ import os
 from pathlib import Path
 p = Path.cwd() / 'rpirelayserver'
 sys.path.append(str(p.resolve())) # '/home/pi/rpirelayserver/rpirelayserver'
-print(sys.path)
 import rpirelayserver as rpi
-print(dir(rpi))
-print(f'The file {rpi.__file__}')
-print(p.cwd())
+
 
 class TestRelayStatus:
     pass

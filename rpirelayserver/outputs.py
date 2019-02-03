@@ -10,3 +10,4 @@ class Relay(DigitalOutputDevice):
         initializing.
         '''
         super().__init__(pin, active_high=False)
+

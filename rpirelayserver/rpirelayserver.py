@@ -6,8 +6,9 @@ import logging
 import pickle
 from pathlib import Path
 from config import Config as config
-from outputs import Relay
-
+if not 'TESTING' in os.environ:
+    from outputs import Relay
+    relays = tuple([Relay(output) for output in config.gpios])
 
 logging.basicConfig(
     format=config.log_format,
@@ -26,7 +27,6 @@ if config.log_to_file:
 server, reader, writer = None, None, None
 connected_clients = []
 message_queue = []
-relays = tuple([Relay(output) for output in config.gpios])
 
 
 def save_relay_status(new_status):
